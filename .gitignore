@@ -6,6 +6,9 @@ frontend/.angular/
 # .NET
 backend/**/bin/
 backend/**/obj/
+backend/**/*.db
+backend/**/*.db-shm
+backend/**/*.db-wal
 
 # OS / editor
 .vscode/
