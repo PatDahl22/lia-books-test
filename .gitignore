@@ -1,0 +1,13 @@
+# Node / Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# .NET
+backend/**/bin/
+backend/**/obj/
+
+# OS / editor
+.vscode/
+.DS_Store
+Thumbs.db
