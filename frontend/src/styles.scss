@@ -1,1 +1,34 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'bootstrap/scss/bootstrap';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+:root {
+  --app-bg: #f7f8fb;
+  --app-surface: #ffffff;
+  --app-border: #d9dee8;
+  --app-text: #1f2937;
+  --app-muted: #667085;
+  --app-accent: #1d7a8c;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+.surface {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+}
+
+.muted {
+  color: var(--app-muted);
+}
+
+.btn-accent {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--app-accent);
+  --bs-btn-border-color: var(--app-accent);
+}
