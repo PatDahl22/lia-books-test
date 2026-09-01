@@ -6,11 +6,23 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var databaseUrl = builder.Configuration["DatabaseUrl"];
+var usesPostgres = !string.IsNullOrWhiteSpace(databaseUrl);
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (usesPostgres)
+    {
+        options.UseNpgsql(BuildPostgresConnectionString(databaseUrl!));
+    }
+    else
+    {
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+});
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
@@ -67,7 +79,14 @@ app.UseCors("Frontend");
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await dbContext.Database.MigrateAsync();
+    if (usesPostgres)
+    {
+        await dbContext.Database.EnsureCreatedAsync();
+    }
+    else
+    {
+        await dbContext.Database.MigrateAsync();
+    }
 }
 
 app.UseAuthentication();
@@ -78,5 +97,25 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+static string BuildPostgresConnectionString(string databaseUrl)
+{
+    var databaseUri = new Uri(databaseUrl);
+    var credentials = databaseUri.UserInfo.Split(':', 2);
+    if (credentials.Length != 2)
+    {
+        throw new InvalidOperationException("PostgreSQL database URL is invalid.");
+    }
+
+    return new NpgsqlConnectionStringBuilder
+    {
+        Host = databaseUri.Host,
+        Port = databaseUri.Port > 0 ? databaseUri.Port : 5432,
+        Database = databaseUri.AbsolutePath.TrimStart('/'),
+        Username = Uri.UnescapeDataString(credentials[0]),
+        Password = Uri.UnescapeDataString(credentials[1]),
+        SslMode = SslMode.Prefer
+    }.ConnectionString;
+}
 
 public partial class Program;
