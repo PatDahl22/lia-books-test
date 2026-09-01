@@ -8,11 +8,12 @@ public sealed class CreateQuoteRequest
     [StringLength(4_000)]
     public string Text { get; init; } = string.Empty;
 
-    [Range(1, 100_000)]
-    public int? Page { get; init; }
+    [Required]
+    [StringLength(150)]
+    public string Author { get; init; } = string.Empty;
 
-    [StringLength(2_000)]
-    public string? Note { get; init; }
+    [StringLength(200)]
+    public string? Source { get; init; }
 }
 
 public sealed class UpdateQuoteRequest
@@ -21,18 +22,18 @@ public sealed class UpdateQuoteRequest
     [StringLength(4_000)]
     public string Text { get; init; } = string.Empty;
 
-    [Range(1, 100_000)]
-    public int? Page { get; init; }
+    [Required]
+    [StringLength(150)]
+    public string Author { get; init; } = string.Empty;
 
-    [StringLength(2_000)]
-    public string? Note { get; init; }
+    [StringLength(200)]
+    public string? Source { get; init; }
 }
 
 public sealed record QuoteResponse(
     int Id,
     string Text,
-    int? Page,
-    string? Note,
-    int BookId,
+    string Author,
+    string? Source,
     DateTime CreatedAt,
     DateTime UpdatedAt);

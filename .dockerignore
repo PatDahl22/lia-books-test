@@ -1,0 +1,10 @@
+.git
+.github
+.vscode
+**/bin
+**/obj
+frontend/node_modules
+frontend/dist
+backend/**/*.db*
+project_sources
+tmp

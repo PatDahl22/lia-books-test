@@ -36,15 +36,6 @@ public sealed class UpdateBookRequest
     public int? PublishedYear { get; init; }
 }
 
-public sealed record BookListItemResponse(
-    int Id,
-    string Title,
-    string Author,
-    int? PublishedYear,
-    int QuoteCount,
-    DateTime CreatedAt,
-    DateTime UpdatedAt);
-
 public sealed record BookResponse(
     int Id,
     string Title,
@@ -52,5 +43,4 @@ public sealed record BookResponse(
     string? Description,
     int? PublishedYear,
     DateTime CreatedAt,
-    DateTime UpdatedAt,
-    IReadOnlyList<QuoteResponse> Quotes);
+    DateTime UpdatedAt);

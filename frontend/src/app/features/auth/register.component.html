@@ -1,0 +1,76 @@
+<main class="auth-page container py-5">
+  <div class="auth-card surface shadow-sm mx-auto">
+    <div class="auth-icon" aria-hidden="true">
+      <i class="fa-solid fa-user-plus"></i>
+    </div>
+    <p class="eyebrow mb-2">Börja samla</p>
+    <h1 class="h2 mb-2">Skapa konto</h1>
+    <p class="text-body-secondary mb-4">Du får fem startcitat direkt när kontot skapas.</p>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="username">Användarnamn</label>
+        <input
+          class="form-control"
+          id="username"
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          [class.is-invalid]="form.controls.username.touched && form.controls.username.invalid"
+        />
+        @if (form.controls.username.touched && form.controls.username.invalid) {
+          <div class="form-error">Använd 3–50 tecken: bokstäver, siffror, punkt, streck eller understreck.</div>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="password">Lösenord</label>
+        <input
+          class="form-control"
+          id="password"
+          type="password"
+          formControlName="password"
+          autocomplete="new-password"
+          [class.is-invalid]="form.controls.password.touched && form.controls.password.invalid"
+        />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <div class="form-error">Lösenordet måste innehålla minst 8 tecken.</div>
+        }
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label" for="confirmPassword">Bekräfta lösenord</label>
+        <input
+          class="form-control"
+          id="confirmPassword"
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+          [class.is-invalid]="passwordMismatch()"
+        />
+        @if (passwordMismatch()) {
+          <div class="form-error">Lösenorden matchar inte.</div>
+        }
+      </div>
+
+      <button class="btn btn-accent btn-lg w-100" type="submit" [disabled]="submitting()">
+        @if (submitting()) {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        } @else {
+          <i class="fa-solid fa-user-plus me-2"></i>
+        }
+        Skapa konto
+      </button>
+    </form>
+
+    <p class="text-center text-body-secondary mt-4 mb-0">
+      Har du redan ett konto? <a routerLink="/login">Logga in</a>
+    </p>
+  </div>
+</main>

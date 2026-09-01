@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: lia-books-test
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Jwt__Key
+        generateValue: true
+      - key: Jwt__Issuer
+        value: BookQuote.Api
+      - key: Jwt__Audience
+        value: BookQuote.Frontend

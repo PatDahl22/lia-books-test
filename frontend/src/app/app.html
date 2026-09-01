@@ -1,28 +1,73 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+<nav class="navbar navbar-expand-lg app-navbar sticky-top" aria-label="Huvudmeny">
   <div class="container">
-    <a class="navbar-brand fw-semibold" href="#">
-      <i class="fa-solid fa-book-open-reader me-2 text-info"></i>
-      LIA Books
+    <a class="navbar-brand" [routerLink]="authService.isAuthenticated() ? '/books' : '/login'" (click)="closeMenu()">
+      <span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-book-open-reader"></i></span>
+      <span>LIA Books</span>
     </a>
 
-    <div class="d-flex gap-2">
-      <button class="btn btn-outline-secondary btn-sm" type="button">
-        <i class="fa-solid fa-moon"></i>
+    <div class="d-flex align-items-center gap-2 order-lg-3">
+      <button
+        class="btn theme-button"
+        type="button"
+        (click)="themeService.toggle()"
+        [attr.aria-label]="themeService.theme() === 'light' ? 'Aktivera mörkt tema' : 'Aktivera ljust tema'"
+        [title]="themeService.theme() === 'light' ? 'Mörkt tema' : 'Ljust tema'"
+      >
+        <i [class]="themeService.theme() === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun'"></i>
       </button>
 
-      <button class="btn btn-accent btn-sm" type="button">
-        <i class="fa-solid fa-right-to-bracket me-1"></i>
-        Login
-      </button>
+      @if (authService.isAuthenticated()) {
+        <button
+          class="navbar-toggler"
+          type="button"
+          aria-controls="mainNavigation"
+          [attr.aria-expanded]="menuOpen()"
+          aria-label="Öppna eller stäng menyn"
+          (click)="toggleMenu()"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      }
     </div>
+
+    @if (authService.isAuthenticated()) {
+      <div class="collapse navbar-collapse order-lg-2" id="mainNavigation" [class.show]="menuOpen()">
+        <ul class="navbar-nav mx-lg-auto py-3 py-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/books" routerLinkActive="active" (click)="closeMenu()">
+              <i class="fa-solid fa-book me-2"></i>Böcker
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/quotes" routerLinkActive="active" (click)="closeMenu()">
+              <i class="fa-solid fa-quote-left me-2"></i>Mina citat
+            </a>
+          </li>
+        </ul>
+
+        <div class="user-menu d-lg-flex align-items-center gap-3 pb-3 pb-lg-0">
+          <span class="username d-block mb-2 mb-lg-0">
+            <i class="fa-solid fa-circle-user me-2"></i>{{ authService.username() }}
+          </span>
+          <button class="btn btn-outline-secondary btn-sm" type="button" (click)="logout()">
+            <i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Logga ut
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="auth-links order-lg-2 ms-auto me-2">
+        <a class="btn btn-link d-none d-sm-inline-flex" routerLink="/login">Logga in</a>
+        <a class="btn btn-accent btn-sm" routerLink="/register">Skapa konto</a>
+      </div>
+    }
   </div>
 </nav>
 
-<main class="container py-4">
-  <section class="surface p-4">
-    <h1 class="h2 mb-2">Books & Quotes</h1>
-    <p class="muted mb-0">
-      A full-stack Angular and .NET project for managing books and favorite quotes.
-    </p>
-  </section>
-</main>
+<router-outlet />
+
+<footer class="app-footer">
+  <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+    <span><i class="fa-solid fa-code me-2"></i>Angular 20 + .NET 9</span>
+    <span>LIA Books Test</span>
+  </div>
+</footer>

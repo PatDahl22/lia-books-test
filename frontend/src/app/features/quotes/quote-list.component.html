@@ -1,0 +1,64 @@
+<main class="container page-shell py-4 py-lg-5">
+  <section class="page-hero quote-hero surface mb-4">
+    <div>
+      <p class="eyebrow mb-2">Ord värda att spara</p>
+      <h1 class="display-6 fw-bold mb-2">Mina citat</h1>
+      <p class="text-body-secondary mb-0">En personlig samling av tankar som inspirerar dig.</p>
+    </div>
+    <a class="btn btn-accent btn-lg hero-action" routerLink="/quotes/new">
+      <i class="fa-solid fa-plus me-2"></i>Lägg till citat
+    </a>
+  </section>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger" role="alert">
+      <i class="fa-solid fa-circle-exclamation me-2"></i>{{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-state"><span class="spinner-border text-accent"></span>Hämtar citat…</div>
+  } @else if (quotes().length === 0) {
+    <section class="empty-state surface text-center">
+      <i class="fa-solid fa-quote-left empty-icon" aria-hidden="true"></i>
+      <h2 class="h4">Din citatsamling är tom</h2>
+      <p class="text-body-secondary">Spara ord som du vill bära med dig.</p>
+      <a class="btn btn-accent" routerLink="/quotes/new"><i class="fa-solid fa-plus me-2"></i>Lägg till citat</a>
+    </section>
+  } @else {
+    <section class="row g-4" aria-label="Citatlista">
+      @for (quote of quotes(); track quote.id) {
+        <div class="col-12 col-lg-6">
+          <article class="quote-card surface h-100">
+            <i class="fa-solid fa-quote-left quote-card__icon" aria-hidden="true"></i>
+            <blockquote class="mb-3">{{ quote.text }}</blockquote>
+            <div class="quote-card__meta">
+              <strong>— {{ quote.author }}</strong>
+              @if (quote.source) {
+                <span>{{ quote.source }}</span>
+              }
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+              <a class="btn btn-sm btn-outline-primary flex-grow-1" [routerLink]="['/quotes', quote.id, 'edit']">
+                <i class="fa-solid fa-pen me-2"></i>Redigera
+              </a>
+              <button
+                class="btn btn-sm btn-outline-danger flex-grow-1"
+                type="button"
+                (click)="deleteQuote(quote)"
+                [disabled]="deletingId() === quote.id"
+              >
+                @if (deletingId() === quote.id) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                } @else {
+                  <i class="fa-solid fa-trash me-2"></i>
+                }
+                Radera
+              </button>
+            </div>
+          </article>
+        </div>
+      }
+    </section>
+  }
+</main>

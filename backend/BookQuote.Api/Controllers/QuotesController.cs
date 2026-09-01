@@ -1,13 +1,16 @@
+using System.Security.Claims;
 using BookQuote.Api.Contracts;
 using BookQuote.Api.Data;
 using BookQuote.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookQuote.Api.Controllers;
 
 [ApiController]
-[Route("api/books/{bookId:int}/quotes")]
+[Authorize]
+[Route("api/quotes")]
 public sealed class QuotesController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
@@ -19,27 +22,24 @@ public sealed class QuotesController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<QuoteResponse>>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IReadOnlyList<QuoteResponse>>> GetAll(
-        int bookId,
         CancellationToken cancellationToken)
     {
-        if (!await BookExists(bookId, cancellationToken))
+        if (!TryGetUserId(out var userId))
         {
-            return NotFound();
+            return Unauthorized();
         }
 
         var quotes = await _dbContext.Quotes
             .AsNoTracking()
-            .Where(quote => quote.BookId == bookId)
-            .OrderBy(quote => quote.Page ?? int.MaxValue)
-            .ThenBy(quote => quote.Id)
+            .Where(quote => quote.UserId == userId)
+            .OrderByDescending(quote => quote.UpdatedAt)
             .Select(quote => new QuoteResponse(
                 quote.Id,
                 quote.Text,
-                quote.Page,
-                quote.Note,
-                quote.BookId,
+                quote.Author,
+                quote.Source,
                 quote.CreatedAt,
                 quote.UpdatedAt))
             .ToListAsync(cancellationToken);
@@ -51,14 +51,18 @@ public sealed class QuotesController : ControllerBase
     [ProducesResponseType<QuoteResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<QuoteResponse>> GetById(
-        int bookId,
         int id,
         CancellationToken cancellationToken)
     {
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
         var quote = await _dbContext.Quotes
             .AsNoTracking()
             .SingleOrDefaultAsync(
-                item => item.BookId == bookId && item.Id == id,
+                item => item.UserId == userId && item.Id == id,
                 cancellationToken);
 
         return quote is null ? NotFound() : Ok(ToResponse(quote));
@@ -67,39 +71,35 @@ public sealed class QuotesController : ControllerBase
     [HttpPost]
     [ProducesResponseType<QuoteResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<QuoteResponse>> Create(
-        int bookId,
         CreateQuoteRequest request,
         CancellationToken cancellationToken)
     {
-        if (!await BookExists(bookId, cancellationToken))
+        if (!TryGetUserId(out var userId))
         {
-            return NotFound();
+            return Unauthorized();
         }
 
         var text = request.Text.Trim();
-        if (text.Length == 0)
+        var author = request.Author.Trim();
+        if (text.Length == 0 || author.Length == 0)
         {
-            ModelState.AddModelError(nameof(request.Text), "Quote text cannot be blank.");
+            ModelState.AddModelError(nameof(request.Text), "Quote text and author cannot be blank.");
             return ValidationProblem(ModelState);
         }
 
         var quote = new Quote
         {
             Text = text,
-            Page = request.Page,
-            Note = NormalizeOptionalText(request.Note),
-            BookId = bookId
+            Author = author,
+            Source = NormalizeOptionalText(request.Source),
+            UserId = userId
         };
 
         _dbContext.Quotes.Add(quote);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return CreatedAtAction(
-            nameof(GetById),
-            new { bookId, id = quote.Id },
-            ToResponse(quote));
+        return CreatedAtAction(nameof(GetById), new { id = quote.Id }, ToResponse(quote));
     }
 
     [HttpPut("{id:int}")]
@@ -107,13 +107,17 @@ public sealed class QuotesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<QuoteResponse>> Update(
-        int bookId,
         int id,
         UpdateQuoteRequest request,
         CancellationToken cancellationToken)
     {
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
         var quote = await _dbContext.Quotes.SingleOrDefaultAsync(
-            item => item.BookId == bookId && item.Id == id,
+            item => item.UserId == userId && item.Id == id,
             cancellationToken);
 
         if (quote is null)
@@ -122,15 +126,16 @@ public sealed class QuotesController : ControllerBase
         }
 
         var text = request.Text.Trim();
-        if (text.Length == 0)
+        var author = request.Author.Trim();
+        if (text.Length == 0 || author.Length == 0)
         {
-            ModelState.AddModelError(nameof(request.Text), "Quote text cannot be blank.");
+            ModelState.AddModelError(nameof(request.Text), "Quote text and author cannot be blank.");
             return ValidationProblem(ModelState);
         }
 
         quote.Text = text;
-        quote.Page = request.Page;
-        quote.Note = NormalizeOptionalText(request.Note);
+        quote.Author = author;
+        quote.Source = NormalizeOptionalText(request.Source);
         quote.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -141,13 +146,15 @@ public sealed class QuotesController : ControllerBase
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(
-        int bookId,
-        int id,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
         var quote = await _dbContext.Quotes.SingleOrDefaultAsync(
-            item => item.BookId == bookId && item.Id == id,
+            item => item.UserId == userId && item.Id == id,
             cancellationToken);
 
         if (quote is null)
@@ -161,21 +168,20 @@ public sealed class QuotesController : ControllerBase
         return NoContent();
     }
 
-    internal static QuoteResponse ToResponse(Quote quote)
+    private bool TryGetUserId(out int userId)
+    {
+        return int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out userId);
+    }
+
+    private static QuoteResponse ToResponse(Quote quote)
     {
         return new QuoteResponse(
             quote.Id,
             quote.Text,
-            quote.Page,
-            quote.Note,
-            quote.BookId,
+            quote.Author,
+            quote.Source,
             quote.CreatedAt,
             quote.UpdatedAt);
-    }
-
-    private Task<bool> BookExists(int bookId, CancellationToken cancellationToken)
-    {
-        return _dbContext.Books.AnyAsync(book => book.Id == bookId, cancellationToken);
     }
 
     private static string? NormalizeOptionalText(string? value)

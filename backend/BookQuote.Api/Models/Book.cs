@@ -16,5 +16,4 @@ public class Book
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public List<Quote> Quotes { get; set; } = new();
 }

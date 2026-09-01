@@ -1,0 +1,85 @@
+:host {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.app-navbar {
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+  border-bottom: 1px solid var(--app-border);
+  backdrop-filter: blur(18px);
+}
+
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--app-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brand-mark {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: var(--app-accent);
+  color: #fff;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--app-accent) 28%, transparent);
+}
+
+.nav-link {
+  margin: 0 0.2rem;
+  border-radius: 0.7rem;
+  color: var(--app-muted);
+  font-weight: 650;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: var(--app-accent-soft);
+  color: var(--app-accent-strong);
+}
+
+.theme-button {
+  display: inline-grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border: 1px solid var(--app-border);
+  border-radius: 50%;
+  color: var(--app-heading);
+}
+
+.username {
+  color: var(--app-muted);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.app-footer {
+  margin-top: auto;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--app-border);
+  color: var(--app-muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    flex-basis: 100%;
+  }
+
+  .user-menu {
+    border-top: 1px solid var(--app-border);
+    padding-top: 1rem;
+  }
+}

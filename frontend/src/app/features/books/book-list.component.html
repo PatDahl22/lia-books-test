@@ -1,0 +1,80 @@
+<main class="container page-shell py-4 py-lg-5">
+  <section class="page-hero surface mb-4">
+    <div>
+      <p class="eyebrow mb-2">Ditt digitala bibliotek</p>
+      <h1 class="display-6 fw-bold mb-2">Böcker</h1>
+      <p class="text-body-secondary mb-0">Samla, uppdatera och håll ordning på böcker du vill minnas.</p>
+    </div>
+    <a class="btn btn-accent btn-lg hero-action" routerLink="/books/new">
+      <i class="fa-solid fa-plus me-2"></i>Lägg till ny bok
+    </a>
+  </section>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger" role="alert">
+      <i class="fa-solid fa-circle-exclamation me-2"></i>{{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-state" aria-live="polite">
+      <div class="spinner-border text-accent" role="status"><span class="visually-hidden">Laddar</span></div>
+      <span>Hämtar biblioteket…</span>
+    </div>
+  } @else if (books().length === 0) {
+    <section class="empty-state surface text-center">
+      <i class="fa-solid fa-book-open empty-icon" aria-hidden="true"></i>
+      <h2 class="h4">Biblioteket väntar på sin första bok</h2>
+      <p class="text-body-secondary">Lägg till en bok så dyker den upp här.</p>
+      <a class="btn btn-accent" routerLink="/books/new">
+        <i class="fa-solid fa-plus me-2"></i>Lägg till bok
+      </a>
+    </section>
+  } @else {
+    <section class="row g-4" aria-label="Boklista">
+      @for (book of books(); track book.id) {
+        <div class="col-12 col-md-6 col-xl-4">
+          <article class="book-card surface h-100">
+            <div class="book-card__mark" aria-hidden="true">
+              <i class="fa-solid fa-book"></i>
+            </div>
+            <div class="book-card__content">
+              <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                <div>
+                  <h2 class="h4 mb-1">{{ book.title }}</h2>
+                  <p class="text-body-secondary mb-0">av {{ book.author }}</p>
+                </div>
+                @if (book.publishedYear) {
+                  <span class="year-badge">{{ book.publishedYear }}</span>
+                }
+              </div>
+
+              <p class="book-description mb-4">
+                {{ book.description || 'Ingen beskrivning har lagts till ännu.' }}
+              </p>
+
+              <div class="d-flex flex-wrap gap-2 mt-auto">
+                <a class="btn btn-outline-primary flex-grow-1" [routerLink]="['/books', book.id, 'edit']">
+                  <i class="fa-solid fa-pen me-2"></i>Redigera
+                </a>
+                <button
+                  class="btn btn-outline-danger flex-grow-1"
+                  type="button"
+                  (click)="deleteBook(book)"
+                  [disabled]="deletingId() === book.id"
+                >
+                  @if (deletingId() === book.id) {
+                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                  } @else {
+                    <i class="fa-solid fa-trash me-2"></i>
+                  }
+                  Radera
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      }
+    </section>
+  }
+</main>

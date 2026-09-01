@@ -1,0 +1,89 @@
+<main class="container page-shell py-4 py-lg-5">
+  <section class="form-card surface mx-auto">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="section-icon" aria-hidden="true"><i class="fa-solid fa-book"></i></div>
+      <div>
+        <p class="eyebrow mb-1">{{ bookId() ? 'Uppdatera biblioteket' : 'Ny titel' }}</p>
+        <h1 class="h2 mb-0">{{ bookId() ? 'Redigera bok' : 'Lägg till ny bok' }}</h1>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ errorMessage() }}
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="loading-state"><span class="spinner-border text-accent"></span>Hämtar boken…</div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="row g-3">
+          <div class="col-12 col-md-7">
+            <label class="form-label" for="title">Titel <span class="required">*</span></label>
+            <input
+              class="form-control"
+              id="title"
+              type="text"
+              formControlName="title"
+              [class.is-invalid]="form.controls.title.touched && form.controls.title.invalid"
+            />
+            @if (form.controls.title.touched && form.controls.title.invalid) {
+              <div class="invalid-feedback">Ange en titel med högst 200 tecken.</div>
+            }
+          </div>
+
+          <div class="col-12 col-md-5">
+            <label class="form-label" for="publishedYear">Publiceringsår</label>
+            <input
+              class="form-control"
+              id="publishedYear"
+              type="number"
+              min="1"
+              max="9999"
+              formControlName="publishedYear"
+              [class.is-invalid]="form.controls.publishedYear.touched && form.controls.publishedYear.invalid"
+            />
+            @if (form.controls.publishedYear.touched && form.controls.publishedYear.invalid) {
+              <div class="invalid-feedback">Ange ett giltigt år.</div>
+            }
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="author">Författare <span class="required">*</span></label>
+            <input
+              class="form-control"
+              id="author"
+              type="text"
+              formControlName="author"
+              [class.is-invalid]="form.controls.author.touched && form.controls.author.invalid"
+            />
+            @if (form.controls.author.touched && form.controls.author.invalid) {
+              <div class="invalid-feedback">Ange en författare med högst 150 tecken.</div>
+            }
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="description">Beskrivning</label>
+            <textarea class="form-control" id="description" rows="5" formControlName="description"></textarea>
+            <div class="form-text">Valfritt, högst 2 000 tecken.</div>
+          </div>
+        </div>
+
+        <div class="form-actions mt-4 pt-4 border-top">
+          <a class="btn btn-outline-secondary" routerLink="/books">
+            <i class="fa-solid fa-arrow-left me-2"></i>Avbryt
+          </a>
+          <button class="btn btn-accent" type="submit" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            } @else {
+              <i class="fa-solid fa-floppy-disk me-2"></i>
+            }
+            Spara bok
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+</main>

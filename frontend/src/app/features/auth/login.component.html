@@ -1,0 +1,67 @@
+<main class="auth-page container py-5">
+  <div class="auth-card surface shadow-sm mx-auto">
+    <div class="auth-icon" aria-hidden="true">
+      <i class="fa-solid fa-book-open-reader"></i>
+    </div>
+    <p class="eyebrow mb-2">Välkommen tillbaka</p>
+    <h1 class="h2 mb-2">Logga in</h1>
+    <p class="text-body-secondary mb-4">Fortsätt till dina böcker och favoritcitat.</p>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="username">Användarnamn</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+          <input
+            class="form-control"
+            id="username"
+            type="text"
+            formControlName="username"
+            autocomplete="username"
+            [class.is-invalid]="form.controls.username.touched && form.controls.username.invalid"
+          />
+        </div>
+        @if (form.controls.username.touched && form.controls.username.invalid) {
+          <div class="form-error">Ange ditt användarnamn.</div>
+        }
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label" for="password">Lösenord</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+          <input
+            class="form-control"
+            id="password"
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            [class.is-invalid]="form.controls.password.touched && form.controls.password.invalid"
+          />
+        </div>
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <div class="form-error">Ange ditt lösenord.</div>
+        }
+      </div>
+
+      <button class="btn btn-accent btn-lg w-100" type="submit" [disabled]="submitting()">
+        @if (submitting()) {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        } @else {
+          <i class="fa-solid fa-right-to-bracket me-2"></i>
+        }
+        Logga in
+      </button>
+    </form>
+
+    <p class="text-center text-body-secondary mt-4 mb-0">
+      Ny här? <a routerLink="/register">Skapa ett konto</a>
+    </p>
+  </div>
+</main>

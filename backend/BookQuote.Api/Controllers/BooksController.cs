@@ -1,12 +1,14 @@
 using BookQuote.Api.Contracts;
 using BookQuote.Api.Data;
 using BookQuote.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookQuote.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/books")]
 public sealed class BooksController : ControllerBase
 {
@@ -18,20 +20,20 @@ public sealed class BooksController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<BookListItemResponse>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<BookListItemResponse>>> GetAll(
+    [ProducesResponseType<IReadOnlyList<BookResponse>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<BookResponse>>> GetAll(
         CancellationToken cancellationToken)
     {
         var books = await _dbContext.Books
             .AsNoTracking()
             .OrderBy(book => book.Title)
             .ThenBy(book => book.Author)
-            .Select(book => new BookListItemResponse(
+            .Select(book => new BookResponse(
                 book.Id,
                 book.Title,
                 book.Author,
+                book.Description,
                 book.PublishedYear,
-                book.Quotes.Count,
                 book.CreatedAt,
                 book.UpdatedAt))
             .ToListAsync(cancellationToken);
@@ -48,7 +50,6 @@ public sealed class BooksController : ControllerBase
     {
         var book = await _dbContext.Books
             .AsNoTracking()
-            .Include(item => item.Quotes)
             .SingleOrDefaultAsync(item => item.Id == id, cancellationToken);
 
         return book is null ? NotFound() : Ok(ToResponse(book));
@@ -93,7 +94,6 @@ public sealed class BooksController : ControllerBase
         CancellationToken cancellationToken)
     {
         var book = await _dbContext.Books
-            .Include(item => item.Quotes)
             .SingleOrDefaultAsync(item => item.Id == id, cancellationToken);
 
         if (book is null)
@@ -139,12 +139,6 @@ public sealed class BooksController : ControllerBase
 
     private static BookResponse ToResponse(Book book)
     {
-        var quotes = book.Quotes
-            .OrderBy(quote => quote.Page ?? int.MaxValue)
-            .ThenBy(quote => quote.Id)
-            .Select(QuotesController.ToResponse)
-            .ToList();
-
         return new BookResponse(
             book.Id,
             book.Title,
@@ -152,8 +146,7 @@ public sealed class BooksController : ControllerBase
             book.Description,
             book.PublishedYear,
             book.CreatedAt,
-            book.UpdatedAt,
-            quotes);
+            book.UpdatedAt);
     }
 
     private static string? NormalizeOptionalText(string? value)
