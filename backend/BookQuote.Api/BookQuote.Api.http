@@ -1,6 +1,70 @@
 @BookQuote.Api_HostAddress = http://localhost:5272
+@bookId = 1
+@quoteId = 1
 
-GET {{BookQuote.Api_HostAddress}}/weatherforecast/
+GET {{BookQuote.Api_HostAddress}}/api/books
 Accept: application/json
 
 ###
+
+POST {{BookQuote.Api_HostAddress}}/api/books
+Content-Type: application/json
+
+{
+  "title": "The Midnight Library",
+  "author": "Matt Haig",
+  "description": "A novel about choices and second chances.",
+  "publishedYear": 2020
+}
+
+###
+
+GET {{BookQuote.Api_HostAddress}}/api/books/{{bookId}}
+Accept: application/json
+
+###
+
+PUT {{BookQuote.Api_HostAddress}}/api/books/{{bookId}}
+Content-Type: application/json
+
+{
+  "title": "The Midnight Library",
+  "author": "Matt Haig",
+  "description": "Updated description.",
+  "publishedYear": 2020
+}
+
+###
+
+POST {{BookQuote.Api_HostAddress}}/api/books/{{bookId}}/quotes
+Content-Type: application/json
+
+{
+  "text": "The only way to learn is to live.",
+  "page": 67,
+  "note": "A reminder to keep trying."
+}
+
+###
+
+GET {{BookQuote.Api_HostAddress}}/api/books/{{bookId}}/quotes
+Accept: application/json
+
+###
+
+PUT {{BookQuote.Api_HostAddress}}/api/books/{{bookId}}/quotes/{{quoteId}}
+Content-Type: application/json
+
+{
+  "text": "The only way to learn is to live.",
+  "page": 68,
+  "note": "Updated page number."
+}
+
+###
+
+DELETE {{BookQuote.Api_HostAddress}}/api/books/{{bookId}}/quotes/{{quoteId}}
+
+###
+
+DELETE {{BookQuote.Api_HostAddress}}/api/books/{{bookId}}
