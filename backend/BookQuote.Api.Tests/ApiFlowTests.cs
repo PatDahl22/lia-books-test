@@ -32,7 +32,9 @@ public sealed class ApiFlowTests : IClassFixture<ApiWebApplicationFactory>
         var auth = await Register(client);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
 
-        var quotes = await client.GetFromJsonAsync<List<QuoteResponse>>("/api/quotes");
+        var quoteResponse = await client.GetAsync("/api/quotes");
+        await AssertSuccess(quoteResponse);
+        var quotes = await quoteResponse.Content.ReadFromJsonAsync<List<QuoteResponse>>();
 
         Assert.NotNull(quotes);
         Assert.Equal(5, quotes.Count);
@@ -51,6 +53,7 @@ public sealed class ApiFlowTests : IClassFixture<ApiWebApplicationFactory>
             Author = "Robert C. Martin",
             PublishedYear = 2008
         });
+        await AssertSuccess(createResponse);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var createdBook = await createResponse.Content.ReadFromJsonAsync<BookResponse>();
         Assert.NotNull(createdBook);
@@ -84,5 +87,17 @@ public sealed class ApiFlowTests : IClassFixture<ApiWebApplicationFactory>
 
         var auth = await response.Content.ReadFromJsonAsync<AuthResponse>();
         return Assert.IsType<AuthResponse>(auth);
+    }
+
+    private static async Task AssertSuccess(HttpResponseMessage response)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        var body = await response.Content.ReadAsStringAsync();
+        var authenticationHeaders = string.Join(", ", response.Headers.WwwAuthenticate);
+        Assert.Fail($"Expected success but received {(int)response.StatusCode}. WWW-Authenticate: {authenticationHeaders}. Body: {body}");
     }
 }
