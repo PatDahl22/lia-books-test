@@ -4,6 +4,12 @@
 
 En responsiv fullstack-applikation för böcker och favoritcitat, byggd som ett LIA-kodtest med Angular 20 och ett .NET 9 REST API.
 
+## Live-demo
+
+**Publicerad applikation:** [https://lia-books-test.onrender.com](https://lia-books-test.onrender.com)
+
+Skapa ett nytt konto för att testa inloggning, böcker, favoritcitat och övriga CRUD-funktioner. Render använder en kostnadsfri tjänst, så den första sidladdningen kan ta en liten stund om applikationen har varit inaktiv.
+
 ## Funktioner
 
 - Registrering och inloggning med JWT
